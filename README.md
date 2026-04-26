@@ -27,6 +27,41 @@ Embeddings salvos em disco evitam re-ingestão a cada restart.
 - Groq (LLaMA 3.3 70B)
 - PyPDF2
 
+
+## Exemplo de uso
+
+**Ingerir um documento:**
+```json
+POST /ingest
+{
+  "file_path": "/caminho/para/documento.pdf"
+}
+```
+
+**Consultar o documento:**
+```json
+POST /query
+{
+  "question": "O que é engenharia da persuasão?",
+  "top_k": 3
+}
+```
+
+**Resposta:**
+```json
+{
+  "answer": "A engenharia da persuasão é...",
+  "sources": ["trecho 1", "trecho 2", "trecho 3"],
+  "tokens_used": 949
+}
+```
+
+## Próximos passos
+- [ ] Suporte a múltiplos documentos simultâneos
+- [ ] Embeddings com sentence-transformers
+- [ ] Deploy com Docker
+- [ ] Autenticação na API
+
 ## Como rodar
 
 ```bash
