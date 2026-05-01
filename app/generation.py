@@ -1,8 +1,12 @@
 from groq import Groq
 from dotenv import load_dotenv
+import logging
 import os
 
 load_dotenv()
+
+logging.basicConfig(level=logging.INFO)
+log = logging.getLogger(__name__)
 
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
@@ -24,8 +28,11 @@ RESPOSTA:"""
     response = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=[{"role": "user", "content": prompt}],
-        temperature=0.1  # baixo → respostas mais factuais
+        temperature=0.1
     )
+
+    log.info(f"Tokens usados: {response.usage.total_tokens}")
+    log.info(f"Pergunta: {pergunta[:50]}")
 
     return {
         "resposta": response.choices[0].message.content,
