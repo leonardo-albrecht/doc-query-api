@@ -78,3 +78,10 @@ Acesse a documentação: http://localhost:8000/docs
 | GET | /health | Status da API |
 | POST | /ingest | Ingere um PDF |
 | POST | /query | Consulta o documento |
+
+## Docker
+
+```bash
+docker build -t doc-query-api .
+docker run -p 8000:8000 --env-file .env doc-query-api
+```
