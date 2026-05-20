@@ -1,0 +1,49 @@
+{
+  "score_pct": 60.0,
+  "passed": 3,
+  "failed": 2,
+  "avg_latency_ms": 1234.91,
+  "total_tokens": 3372,
+  "cases": [
+    {
+      "question": "O que é engenharia da persuasão?",
+      "passed": false,
+      "latency_ms": 3090.97,
+      "tokens_used": 950,
+      "expect_refusal": false,
+      "failure_reason": "keywords ausentes: ['cérebro', 'decisão']"
+    },
+    {
+      "question": "Como o cérebro humano toma decisões de compra?",
+      "passed": false,
+      "latency_ms": 962.04,
+      "tokens_used": 683,
+      "expect_refusal": false,
+      "failure_reason": "keywords ausentes: ['decisão', 'neurociência']"
+    },
+    {
+      "question": "O que é o efeito GAP de Danny Iny?",
+      "passed": true,
+      "latency_ms": 716.66,
+      "tokens_used": 628,
+      "expect_refusal": false,
+      "failure_reason": ""
+    },
+    {
+      "question": "Qual a capital da França?",
+      "passed": true,
+      "latency_ms": 523.15,
+      "tokens_used": 549,
+      "expect_refusal": true,
+      "failure_reason": ""
+    },
+    {
+      "question": "Como funciona um motor a combustão?",
+      "passed": true,
+      "latency_ms": 881.73,
+      "tokens_used": 562,
+      "expect_refusal": true,
+      "failure_reason": ""
+    }
+  ]
+}
