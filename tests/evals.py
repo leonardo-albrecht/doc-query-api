@@ -11,7 +11,7 @@ from app.generation import gerar_resposta
 
 logging.disable(logging.CRITICAL)
 
-# --- Estrutura de um caso de teste ---
+
 @dataclass
 class EvalCase:
     question: str
@@ -19,17 +19,16 @@ class EvalCase:
     expected_keywords: list[str] = field(default_factory=list)  # palavras que devem aparecer na resposta
 
 
-# --- Casos de teste para o documento de engenharia de persuasão ---
 EVAL_CASES: list[EvalCase] = [
     EvalCase(
         question="O que é engenharia da persuasão?",
         expect_refusal=False,
-        expected_keywords=["persuasão", "influenciar"],  # removido "cérebro", "decisão"
+        expected_keywords=["persuasão", "influenciar"],
     ),
     EvalCase(
         question="Como o cérebro humano toma decisões de compra?",
         expect_refusal=False,
-        expected_keywords=["cérebro", "lógica"],  # removido "decisão", "neurociência"
+        expected_keywords=["cérebro", "lógica"],
     ),
     EvalCase(
         question="O que é o efeito GAP de Danny Iny?",
@@ -48,7 +47,6 @@ EVAL_CASES: list[EvalCase] = [
     ),
 ]
 
-# --- Frases que indicam recusa ---
 REFUSAL_PHRASES = [
     "não encontrei",
     "não há informação",
@@ -82,7 +80,6 @@ def run_evals() -> None:
         latency_ms = round((time.perf_counter() - t_start) * 1000, 2)
         refusal_detected = is_refusal(answer)
 
-        # Avalia resultado
         if case.expect_refusal:
             ok = refusal_detected
             failure_reason = "esperava recusa mas o modelo respondeu" if not ok else ""
@@ -115,7 +112,6 @@ def run_evals() -> None:
             "failure_reason": failure_reason,
         })
 
-    # Sumário
     total = len(EVAL_CASES)
     score = round((passed / total) * 100, 1)
     avg_latency = round(sum(r["latency_ms"] for r in results) / total, 2)
@@ -127,7 +123,6 @@ def run_evals() -> None:
     print(f"Tokens consumidos: {total_tokens}")
     print("=" * 40)
 
-    # Salva resultado em JSON para histórico
     os.makedirs("tests/results", exist_ok=True)
     output_path = f"tests/results/eval_{int(time.time())}.json"
     with open(output_path, "w", encoding="utf-8") as f:
