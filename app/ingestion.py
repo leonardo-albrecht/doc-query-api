@@ -55,12 +55,19 @@ def ingerir_documento(file_path: str) -> dict:
     texto = limpar_texto(texto)   
     chunks = chunk_texto(texto)
 
-    ids = [f"chunk_{i}" for i in range(len(chunks))]
+    # Use unique prefix to prevent conflict across different document uploads
+    doc_id = re.sub(r'[^a-zA-Z0-9_-]', '_', os.path.basename(file_path))
+    ids = [f"{doc_id}_chunk_{i}" for i in range(len(chunks))]
     
-    collection.add(
-        documents=chunks,
-        ids=ids
-    )
+    # Process and add chunks in small batches to avoid ONNX Runtime memory issues
+    batch_size = 20
+    for i in range(0, len(chunks), batch_size):
+        batch_chunks = chunks[i:i + batch_size]
+        batch_ids = ids[i:i + batch_size]
+        collection.add(
+            documents=batch_chunks,
+            ids=batch_ids
+        )
 
     return {
         "chunks_gerados": len(chunks),

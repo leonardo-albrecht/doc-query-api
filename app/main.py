@@ -1,8 +1,13 @@
 import logging
 import time
 import uuid
-from fastapi import FastAPI, HTTPException, Request
+import os
+import shutil
+from fastapi import FastAPI, HTTPException, Request, UploadFile, File
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.models import IngestRequest, QueryRequest, QueryResponse
 from app.ingestion import ingerir_documento
@@ -22,6 +27,15 @@ app = FastAPI(
     version="1.0.0",
 )
 
+# --- CORS ---
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 # --- Request ID Middleware ---
 @app.middleware("http")
@@ -33,13 +47,53 @@ async def add_request_id(request: Request, call_next):
     return response
 
 
+# --- Serve Frontend ---
+@app.get("/")
+def serve_frontend():
+    return FileResponse("static/index.html")
+
+
 # --- Health ---
 @app.get("/health")
 def health():
     return {"status": "ok", "version": "1.0.0"}
 
 
-# --- Ingest ---
+# --- Upload PDF ---
+UPLOAD_DIR = "uploads"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+
+@app.post("/upload")
+async def upload_pdf(file: UploadFile = File(...)):
+    if not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Apenas arquivos PDF são aceitos")
+
+    file_path = os.path.join(UPLOAD_DIR, f"{uuid.uuid4().hex[:8]}_{file.filename}")
+
+    try:
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+
+        resultado = ingerir_documento(file_path)
+
+        logger.info(
+            '{"event": "upload_ingest_success", "filename": "%s", "chunks": %d}',
+            file.filename,
+            resultado["chunks_gerados"],
+        )
+
+        return {
+            "filename": file.filename,
+            "chunks_gerados": resultado["chunks_gerados"],
+            "caracteres_totais": resultado["caracteres_totais"],
+        }
+    except Exception as e:
+        logger.error('{"event": "upload_error", "reason": "%s"}', str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# --- Ingest (original, mantido por retrocompatibilidade) ---
 @app.post("/ingest")
 def ingest(request: IngestRequest):
     try:
@@ -101,3 +155,7 @@ def query(request: QueryRequest):
             total_ms,
         )
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# --- Mount static files AFTER routes ---
+app.mount("/static", StaticFiles(directory="static"), name="static")
